@@ -28,7 +28,7 @@ const MasterAkun = () => {
     dept_name: '' 
   });
 
-  // Pilihan Dropdown Grup Akun Standar Akuntansi HRD NFBS Lembang
+  // Pilihan Dropdown Grup Akun Standar Akuntansi Keuangan NFBS Lembang
   const groupOptions = [
     'Pemasukan / Pendapatan',
     'Biaya Operasional & SDM',
@@ -176,26 +176,43 @@ const MasterAkun = () => {
 
             {activeTab === 'akun' ? (
               <form onSubmit={handleSaveAccount} className="space-y-4">
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50 outline-none" placeholder="Kode Akun (5-xxx)" value={accountForm.account_code} onChange={e => setAccountForm({...accountForm, account_code: e.target.value})} />
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Kode Akun</label>
+                  <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50 outline-none" placeholder="Kode Akun (5-xxx)" value={accountForm.account_code} onChange={e => setAccountForm({...accountForm, account_code: e.target.value})} />
+                </div>
                 
-                <select className="w-full p-3 border rounded-xl text-sm bg-white font-medium outline-none" value={accountForm.account_type} onChange={e => setAccountForm({...accountForm, account_type: e.target.value})}>
-                  <option value="Aset">Aset (Kas/Bank/Piutang)</option>
-                  <option value="Kewajiban">Kewajiban (Hutang)</option>
-                  <option value="Ekuitas">Ekuitas (Modal)</option>
-                  <option value="Pendapatan">Pendapatan (SPP/Donasi)</option>
-                  <option value="Beban">Beban (Biaya Operasional)</option>
-                </select>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Tipe Akun</label>
+                  <select className="w-full p-3 border rounded-xl text-sm bg-white font-medium outline-none" value={accountForm.account_type} onChange={e => setAccountForm({...accountForm, account_type: e.target.value})}>
+                    <option value="Aset">Aset (Kas/Bank/Piutang)</option>
+                    <option value="Kewajiban">Kewajiban (Hutang)</option>
+                    <option value="Ekuitas">Ekuitas (Modal)</option>
+                    <option value="Pendapatan">Pendapatan (SPP/Donasi)</option>
+                    <option value="Beban">Beban (Biaya Operasional)</option>
+                  </select>
+                </div>
                 
-                {/* PERUBAHAN UTAMA: MENGGUNAKAN DROPDOWN KATEGORI GRUP AKUN */}
-                <select required className="w-full p-3 border rounded-xl text-sm bg-white font-medium text-slate-700 outline-none" value={accountForm.account_group} onChange={e => setAccountForm({...accountForm, account_group: e.target.value})}>
-                  <option value="">-- Pilih Grup Akun --</option>
-                  {groupOptions.map((opt, idx) => (
-                    <option key={idx} value={opt}>{opt}</option>
-                  ))}
-                </select>
+                {/* FIX: SEKARANG MENGGUNAKAN DROPDOWN PILIHAN GRUP */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Grup Akun (Akuntansi)</label>
+                  <select required className="w-full p-3 border rounded-xl text-sm bg-white font-medium text-slate-700 outline-none" value={accountForm.account_group || ''} onChange={e => setAccountForm({...accountForm, account_group: e.target.value})}>
+                    <option value="">-- Pilih Grup Akun --</option>
+                    {groupOptions.map((opt, idx) => (
+                      <option key={idx} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50 outline-none" placeholder="Nama Akun" value={accountForm.account_name} onChange={e => setAccountForm({...accountForm, account_name: e.target.value})} />
-                <input required type="number" className="w-full p-3 border rounded-xl text-sm font-bold text-blue-600 bg-slate-50 outline-none" placeholder="Pagu Anggaran" value={accountForm.initial_budget} onChange={e => setAccountForm({...accountForm, initial_budget: e.target.value})} />
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Nama Akun</label>
+                  <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50 outline-none" placeholder="Nama Akun" value={accountForm.account_name} onChange={e => setAccountForm({...accountForm, account_name: e.target.value})} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase">Pagu Anggaran</label>
+                  <input required type="number" className="w-full p-3 border rounded-xl text-sm font-bold text-blue-600 bg-slate-50 outline-none" placeholder="Pagu Anggaran" value={accountForm.initial_budget} onChange={e => setAccountForm({...accountForm, initial_budget: e.target.value})} />
+                </div>
+
                 <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg">Simpan Akun</button>
               </form>
             ) : (
@@ -258,7 +275,6 @@ const MasterAkun = () => {
                     <tr key={acc.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-700">{acc.account_code}</div>
-                        {/* STYLE BADGE WARNA YANG KLOP UNTUK SETIAP GRUP */}
                         <div className="mt-1">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tight
                             ${acc.account_group === 'Pemasukan / Pendapatan' ? 'bg-emerald-100 text-emerald-800' : ''}
