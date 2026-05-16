@@ -28,6 +28,14 @@ const MasterAkun = () => {
     dept_name: '' 
   });
 
+  // Pilihan Grup Akun Rekomendasi Akuntansi Keuangan NFBS
+  const groupOptions = [
+    'Pemasukan / Pendapatan',
+    'Biaya Operasional & SDM',
+    'Biaya Program & Kegiatan',
+    'Biaya Investasi & Aset'
+  ];
+
   useEffect(() => {
     fetchData();
   }, [activeTab]);
@@ -44,22 +52,29 @@ const MasterAkun = () => {
     setLoading(false);
   };
 
-  // --- LOGIKA TEMPLATE & IMPORT ---
+  // --- LOGIKA TEMPLATE & IMPORT EXCEL ---
   const downloadTemplate = () => {
     const templateData = [
       {
         "Kode": "5-111-001",
         "Nama": "Gaji Guru Pengajar",
         "Tipe": "Beban",
-        "Grup": "Gaji & Tunjangan",
+        "Grup": "Biaya Operasional & SDM",
         "Anggaran": 50000000
       },
       {
-        "Kode": "1-111-001",
-        "Nama": "Kas Operasional Sekolah",
-        "Tipe": "Aset",
-        "Grup": "Kas & Bank",
-        "Anggaran": 0
+        "Kode": "4-111-001",
+        "Nama": "Pagu Anggaran Yayasan",
+        "Tipe": "Pendapatan",
+        "Grup": "Pemasukan / Pendapatan",
+        "Anggaran": 150000000
+      },
+      {
+        "Kode": "6-111-001",
+        "Nama": "Pelatihan Kompetensi Guru",
+        "Tipe": "Beban",
+        "Grup": "Biaya Program & Kegiatan",
+        "Anggaran": 12000000
       }
     ];
 
@@ -85,13 +100,13 @@ const MasterAkun = () => {
         account_code: item.Kode || item.account_code,
         account_name: item.Nama || item.account_name,
         account_type: item.Tipe || 'Beban',
-        account_group: item.Grup || '',
+        account_group: item.Grup || item.account_group || '',
         initial_budget: parseFloat(item.Anggaran || item.initial_budget) || 0
       }));
 
       const { error } = await supabase.from('accounts').insert(formattedData);
       if (!error) {
-        alert("Import Berhasil!");
+        alert("Import Berhasil disinkronkan ke Supabase!");
         fetchData();
       } else {
         alert("Gagal Import: " + error.message);
@@ -103,6 +118,11 @@ const MasterAkun = () => {
   // --- LOGIKA SIMPAN DATA ---
   const handleSaveAccount = async (e) => {
     e.preventDefault();
+    if (!accountForm.account_group) {
+      alert("Mohon pilih Grup Akun terlebih dahulu, Umi.");
+      return;
+    }
+
     const payload = { 
       account_code: accountForm.account_code,
       account_name: accountForm.account_name,
@@ -139,140 +159,208 @@ const MasterAkun = () => {
   const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
-      <div className="flex justify-between items-end">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {/* ATAS: HEADER & NAVIGASI TAB */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2 uppercase tracking-tighter">
             <Database className="text-blue-600" /> Data Master
           </h1>
-          <p className="text-slate-500 text-sm">Pengaturan Akun & Unit Kerja NFBS Lembang</p>
+          <p className="text-slate-500 text-sm font-medium">Pengaturan Akun & Unit Kerja NFBS Lembang</p>
         </div>
         
-        <div className="flex bg-slate-200 p-1 rounded-xl">
-          <button onClick={() => setActiveTab('akun')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'akun' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>
+        <div className="flex bg-slate-100 p-1 rounded-2xl border-2 border-slate-200 shadow-inner">
+          <button onClick={() => setActiveTab('akun')} className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${activeTab === 'akun' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>
             Daftar Akun
           </button>
-          <button onClick={() => setActiveTab('dept')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'dept' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}>
+          <button onClick={() => setActiveTab('dept')} className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${activeTab === 'dept' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>
             Departemen
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* LEFT COLUMN: FORM & IMPORT */}
+        {/* KOLOM KIRI: FORM ENTRI & ALAT AKSES */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h2 className="font-bold text-slate-700 mb-6 flex items-center gap-2 text-sm uppercase tracking-wider">
-              {activeTab === 'akun' ? (accountForm.id ? 'Ubah Akun' : 'Tambah Akun') : (deptForm.id ? 'Ubah Dept' : 'Tambah Dept')}
+          <div className="bg-white p-6 rounded-[2rem] border-2 border-slate-100 shadow-md">
+            <h2 className="font-black text-slate-800 mb-6 flex items-center gap-2 text-xs uppercase tracking-widest text-blue-600">
+              {activeTab === 'akun' ? (accountForm.id ? '✏️ Ubah Akun Master' : '➕ Tambah Akun Master') : (deptForm.id ? '✏️ Ubah Unit Kerja' : '➕ Tambah Unit Kerja')}
             </h2>
 
             {activeTab === 'akun' ? (
               <form onSubmit={handleSaveAccount} className="space-y-4">
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50" placeholder="Kode Akun (5-xxx)" value={accountForm.account_code} onChange={e => setAccountForm({...accountForm, account_code: e.target.value})} />
-                <select className="w-full p-3 border rounded-xl text-sm bg-white font-medium" value={accountForm.account_type} onChange={e => setAccountForm({...accountForm, account_type: e.target.value})}>
-                  <option value="Aset">Aset (Kas/Bank/Piutang)</option>
-                  <option value="Kewajiban">Kewajiban (Hutang)</option>
-                  <option value="Ekuitas">Ekuitas (Modal)</option>
-                  <option value="Pendapatan">Pendapatan (SPP/Donasi)</option>
-                  <option value="Beban">Beban (Biaya Operasional)</option>
-                </select>
-                <input className="w-full p-3 border rounded-xl text-sm bg-slate-50" placeholder="Grup (Contoh: Gaji)" value={accountForm.account_group} onChange={e => setAccountForm({...accountForm, account_group: e.target.value})} />
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50" placeholder="Nama Akun" value={accountForm.account_name} onChange={e => setAccountForm({...accountForm, account_name: e.target.value})} />
-                <input required type="number" className="w-full p-3 border rounded-xl text-sm font-bold text-blue-600 bg-slate-50" placeholder="Pagu Anggaran" value={accountForm.initial_budget} onChange={e => setAccountForm({...accountForm, initial_budget: e.target.value})} />
-                <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 shadow-lg">Simpan Akun</button>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Kode Akun</label>
+                  <input required className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm font-bold bg-slate-50 font-mono focus:border-blue-500 outline-none" placeholder="Contoh: 5-111" value={accountForm.account_code} onChange={e => setAccountForm({...accountForm, account_code: e.target.value})} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Tipe Akun</label>
+                  <select className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm bg-white font-bold text-slate-700 focus:border-blue-500 outline-none" value={accountForm.account_type} onChange={e => setAccountForm({...accountForm, account_type: e.target.value})}>
+                    <option value="Aset">Aset (Kas/Bank/Piutang)</option>
+                    <option value="Kewajiban">Kewajiban (Hutang)</option>
+                    <option value="Ekuitas">Ekuitas (Modal)</option>
+                    <option value="Pendapatan">Pendapatan (SPP/Donasi)</option>
+                    <option value="Beban">Beban (Biaya Operasional)</option>
+                  </select>
+                </div>
+
+                {/* MODIFIKASI: DROPDOWN GRUP AKUN REKOMENDASI */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Grup Akun (Akuntansi)</label>
+                  <select required className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm bg-white font-bold text-slate-700 focus:border-blue-500 outline-none" value={accountForm.account_group} onChange={e => setAccountForm({...accountForm, account_group: e.target.value})}>
+                    <option value="">-- Pilih Kelompok Grup --</option>
+                    {groupOptions.map((group, index) => (
+                      <option key={index} value={group}>{group}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nama Mata Anggaran</label>
+                  <input required className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm font-bold bg-slate-50 focus:border-blue-500 outline-none" placeholder="Nama Akun Lengkap" value={accountForm.account_name} onChange={e => setAccountForm({...accountForm, account_name: e.target.value})} />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Pagu Anggaran Awal (RAB)</label>
+                  <input required type="number" className="w-full p-3.5 border-2 border-blue-100 rounded-xl text-sm font-black text-blue-600 bg-blue-50/50 focus:border-blue-500 outline-none" placeholder="Rp 0" value={accountForm.initial_budget} onChange={e => setAccountForm({...accountForm, initial_budget: e.target.value})} />
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" className="flex-1 bg-blue-600 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-blue-700 shadow-md transition-all">
+                    Simpan Akun
+                  </button>
+                  {accountForm.id && (
+                    <button type="button" onClick={resetAccountForm} className="bg-slate-200 text-slate-600 px-4 rounded-xl font-bold text-xs uppercase hover:bg-slate-300">
+                      Batal
+                    </button>
+                  )}
+                </div>
               </form>
             ) : (
               <form onSubmit={handleSaveDept} className="space-y-4">
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50" placeholder="Kode Dept (HRD/SARPRAS)" value={deptForm.dept_code} onChange={e => setDeptForm({...deptForm, dept_code: e.target.value})} />
-                <input required className="w-full p-3 border rounded-xl text-sm bg-slate-50" placeholder="Nama Departemen" value={deptForm.dept_name} onChange={e => setDeptForm({...deptForm, dept_name: e.target.value})} />
-                <button className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black shadow-lg">Simpan Departemen</button>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Kode Departemen</label>
+                  <input required className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm font-bold bg-slate-50 focus:border-slate-900 outline-none uppercase" placeholder="Contoh: HRD / SARPRAS" value={deptForm.dept_code} onChange={e => setDeptForm({...deptForm, dept_code: e.target.value})} />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Nama Unit / Bidang</label>
+                  <input required className="w-full p-3.5 border-2 border-slate-100 rounded-xl text-sm font-bold bg-slate-50 focus:border-slate-900 outline-none" placeholder="Nama Lembaga / Unit" value={deptForm.dept_name} onChange={e => setDeptForm({...deptForm, dept_name: e.target.value})} />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" className="flex-1 bg-slate-900 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider hover:bg-black shadow-md transition-all">
+                    Simpan Departemen
+                  </button>
+                  {deptForm.id && (
+                    <button type="button" onClick={() => setDeptForm({ id: null, dept_code: '', dept_name: '' })} className="bg-slate-200 text-slate-600 px-4 rounded-xl font-bold text-xs uppercase hover:bg-slate-300">
+                      Batal
+                    </button>
+                  )}
+                </div>
               </form>
             )}
           </div>
 
           {activeTab === 'akun' && (
-            <div className="bg-green-50 p-6 rounded-2xl border border-green-200 border-dashed">
+            <div className="bg-emerald-50/60 p-6 rounded-[2rem] border-2 border-emerald-200 border-dashed shadow-sm">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-green-700 font-bold text-xs uppercase flex items-center gap-2">
-                  <FileSpreadsheet size={16} /> Import Excel
+                <h3 className="text-emerald-800 font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5">
+                  <FileSpreadsheet size={16} className="text-emerald-600" /> Massal Import Excel
                 </h3>
-                <button onClick={downloadTemplate} className="text-[10px] bg-green-200 text-green-700 px-2 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-green-300">
-                  <DownloadCloud size={12} /> Template
+                <button onClick={downloadTemplate} className="text-[10px] bg-white border border-emerald-200 text-emerald-700 px-3 py-1.5 rounded-xl font-extrabold flex items-center gap-1 hover:bg-emerald-100 shadow-sm transition-all">
+                  <DownloadCloud size={12} /> Ambil Template
                 </button>
               </div>
               <label className="block">
-                <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} className="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer"/>
+                <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} className="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[11px] file:font-black file:uppercase file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer transition-all"/>
               </label>
             </div>
           )}
         </div>
 
-        {/* RIGHT COLUMN: LIST TABLE */}
+        {/* KOLOM KANAN: BILAH PENCARIAN & TABEL VIEW */}
         <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-            <Search className="text-slate-400" size={20} />
-            <input type="text" placeholder="Cari data..." className="flex-1 outline-none text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+            <Search className="text-slate-400" size={18} />
+            <input type="text" placeholder={activeTab === 'akun' ? "Cari nama atau kode anggaran..." : "Cari nama unit kerja..."} className="flex-1 outline-none text-sm font-bold text-slate-700 placeholder-slate-400" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[9px] tracking-widest">
-                {activeTab === 'akun' ? (
-                  <tr>
-                    <th className="px-6 py-4">Kode / Grup</th>
-                    <th className="px-6 py-4">Nama Akun</th>
-                    <th className="px-6 py-4">Tipe</th>
-                    <th className="px-6 py-4 text-right">Pagu RAB</th>
-                    <th className="px-6 py-4 text-center">Aksi</th>
-                  </tr>
-                ) : (
-                  <tr>
-                    <th className="px-6 py-4">Kode Dept</th>
-                    <th className="px-6 py-4">Nama Departemen</th>
-                    <th className="px-6 py-4 text-center">Aksi</th>
-                  </tr>
-                )}
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {loading ? (
-                  <tr><td colSpan="5" className="text-center py-10 text-slate-400 font-medium">Memuat data...</td></tr>
-                ) : activeTab === 'akun' ? (
-                  accounts.filter(acc => acc.account_name.toLowerCase().includes(searchTerm.toLowerCase())).map(acc => (
-                    <tr key={acc.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-700">{acc.account_code}</div>
-                        <div className="text-[10px] text-slate-400 font-medium">{acc.account_group || 'Tanpa Grup'}</div>
-                      </td>
-                      <td className="px-6 py-4 font-bold text-slate-600">{acc.account_name}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                          acc.account_type === 'Aset' ? 'bg-blue-100 text-blue-700' :
-                          acc.account_type === 'Beban' ? 'bg-red-100 text-red-700' :
-                          acc.account_type === 'Pendapatan' ? 'bg-green-100 text-green-700' :
-                          'bg-slate-100 text-slate-600'
-                        }`}>{acc.account_type}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right font-bold text-slate-800">{formatIDR(acc.initial_budget)}</td>
-                      <td className="px-6 py-4 flex justify-center gap-1">
-                        <button onClick={() => setAccountForm(acc)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDelete('accounts', acc.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={14} /></button>
-                      </td>
+          <div className="bg-white rounded-[2rem] border-2 border-slate-100 shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="bg-slate-900 text-white font-black uppercase text-[9px] tracking-widest border-b border-slate-800">
+                  {activeTab === 'akun' ? (
+                    <tr>
+                      <th className="px-6 py-4.5">Kode / Grup</th>
+                      <th className="px-6 py-4.5">Nama Mata Anggaran</th>
+                      <th className="px-6 py-4.5">Tipe</th>
+                      <th className="px-6 py-4.5 text-right">Pagu Anggaran</th>
+                      <th className="px-6 py-4.5 text-center w-24">Aksi</th>
                     </tr>
-                  ))
-                ) : (
-                  departments.filter(d => d.dept_name.toLowerCase().includes(searchTerm.toLowerCase())).map(d => (
-                    <tr key={d.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4 font-black text-blue-600">{d.dept_code}</td>
-                      <td className="px-6 py-4 font-bold text-slate-700 uppercase">{d.dept_name}</td>
-                      <td className="px-6 py-4 flex justify-center gap-1">
-                        <button onClick={() => setDeptForm(d)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 size={14} /></button>
-                        <button onClick={() => handleDelete('departments', d.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={14} /></button>
-                      </td>
+                  ) : (
+                    <tr>
+                      <th className="px-6 py-4.5">Kode Unit</th>
+                      <th className="px-6 py-4.5">Nama Unit Kerja / Departemen</th>
+                      <th className="px-6 py-4.5 text-center w-24">Aksi</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  )}
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {loading ? (
+                    <tr><td colSpan="5" className="text-center py-12 text-slate-400 font-bold tracking-tight">Menyelaraskan data, mohon tunggu...</td></tr>
+                  ) : activeTab === 'akun' ? (
+                    accounts.filter(acc => acc.account_name.toLowerCase().includes(searchTerm.toLowerCase()) || acc.account_code.includes(searchTerm)).map(acc => (
+                      <tr key={acc.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-mono font-black text-blue-600 text-sm">{acc.account_code}</div>
+                          {/* PENANDA WARNA BADGE SESUAI GRUP AKUNTANSI BARU */}
+                          <div className="mt-1">
+                            <span className={`text-[9px] px-2 py-0.5 font-black uppercase rounded-md tracking-tighter border
+                              ${acc.account_group === 'Pemasukan / Pendapatan' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : ''}
+                              ${acc.account_group === 'Biaya Operasional & SDM' ? 'bg-blue-50 text-blue-700 border-blue-100' : ''}
+                              ${acc.account_group === 'Biaya Program & Kegiatan' ? 'bg-purple-50 text-purple-700 border-purple-100' : ''}
+                              ${acc.account_group === 'Biaya Investasi & Aset' ? 'bg-amber-50 text-amber-700 border-amber-100' : ''}
+                              ${!acc.account_group ? 'bg-slate-50 text-slate-400 border-slate-100 italic' : ''}
+                            `}>
+                              {acc.account_group || 'Belum Ditata'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 font-black text-slate-700 text-sm">{acc.account_name}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                            acc.account_type === 'Aset' ? 'bg-blue-100 text-blue-800' :
+                            acc.account_type === 'Beban' ? 'bg-red-100 text-red-800' :
+                            acc.account_type === 'Pendapatan' ? 'bg-green-100 text-green-800' :
+                            'bg-slate-100 text-slate-600'
+                          }`}>{acc.account_type}</span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-mono font-black text-slate-900 text-sm">{formatIDR(acc.initial_budget)}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center items-center gap-1">
+                            <button onClick={() => setAccountForm(acc)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit2 size={14} /></button>
+                            <button onClick={() => handleDelete('accounts', acc.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    departments.filter(d => d.dept_name.toLowerCase().includes(searchTerm.toLowerCase()) || d.dept_code.toLowerCase().includes(searchTerm.toLowerCase())).map(d => (
+                      <tr key={d.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-6 py-4 font-mono font-black text-blue-600 text-sm">{d.dept_code}</td>
+                        <td className="px-6 py-4 font-black text-slate-700 text-sm uppercase tracking-tight">{d.dept_name}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center items-center gap-1">
+                            <button onClick={() => setDeptForm(d)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit2 size={14} /></button>
+                            <button onClick={() => handleDelete('departments', d.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={14} /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -280,7 +368,7 @@ const MasterAkun = () => {
   );
 
   async function handleDelete(table, id) {
-    if (window.confirm("Hapus data ini secara permanen?")) {
+    if (window.confirm("Apakah Umi yakin ingin menghapus data master ini secara permanen?")) {
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (!error) fetchData();
     }
