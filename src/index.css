@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Tambahkan ini jika Anda ingin warna background dasar yang lebih halus */
+body {
+  @apply bg-slate-50;
+}

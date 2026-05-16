@@ -1,0 +1,66 @@
+/* RESET & LAYOUT BASE */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-print-color-adjust: exact;
+}
+
+/* KHUSUS PENGATURAN CETAK (PRINT MODE) */
+@media print {
+  /* 1. Sembunyikan elemen yang tidak perlu */
+  aside, nav, header, footer,
+  .print\:hidden, button, select, input, .no-print,
+  .filter-panel { /* Tambahkan .filter-panel jika ada */
+    display: none !important;
+  }
+
+  /* 2. Paksa konten utama mengisi seluruh lebar */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    position: relative; /* Ubah ke relative agar tanda tangan tidak numpuk di atas */
+    background: white !important;
+  }
+
+  /* 3. Atur ukuran kertas dan margin aman printer */
+  @page {
+    size: A4 landscape; /* NFBS Lembang biasanya lebih rapi pakai landscape untuk 6 kolom */
+    margin: 15mm; 
+  }
+
+  /* 4. Optimasi Tabel & Judul Center */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1px solid #000 !important; /* Border luar hitam pekat */
+  }
+  
+  th {
+    text-align: center !important; /* MEMASTIKAN JUDUL TABEL DI TENAH */
+    vertical-align: middle !important;
+    border: 1px solid #000 !important;
+    background-color: #f1f5f9 !important; /* Warna abu tipis agar header beda */
+  }
+
+  td {
+    border: 1px solid #000 !important; /* Border antar sel hitam pekat */
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* 5. Mencegah Tanda Tangan Terpotong */
+  .signature-wrapper {
+    page-break-inside: avoid !important;
+    margin-top: 50px !important;
+    display: block !important;
+  }
+
+  /* 6. Warna teks agar kontras */
+  .text-green-600 { color: #16a34a !important; }
+  .text-red-600 { color: #dc2626 !important; }
+}
