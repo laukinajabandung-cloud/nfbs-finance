@@ -1,3 +1,4 @@
+// Bismillah aplikasi keuangan NFBS Lembang sembuh dari 404
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom'; 
 import { supabase } from './lib/supabaseClient';
