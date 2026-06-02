@@ -177,7 +177,7 @@ const Lpu = () => {
       <div className="printable-lpu bg-white p-2">
         {/* KOP SURAT STRUKTUR YAYASAN */}
         <div className="flex items-start gap-4 border-b-2 border-black pb-2 mb-4">
-          <img src="https://i.ibb.co.com/Q0Tfwcz/logo.png" alt="Logo NFBS" className="w-14 h-14 object-contain" />
+          <img src="https://i.ibb.co.com/Q0Tfwcz/logo.png" alt="Logo NFBS" className="w-10 h-10 object-contain" />
           <div className="flex-1 text-center pr-12">
             <h2 className="text-[11pt] font-bold uppercase leading-tight">Yayasan Pesantren Pendidikan Islam Madani</h2>
             <h3 className="text-[11pt] font-bold uppercase leading-tight">Nurul Fikri Boarding School Lembang</h3>
